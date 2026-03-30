@@ -9,3 +9,7 @@ langchain-text-splitters
 langchain-ollama
 langchain-chroma
 streamlit
+pillow
+pytesseract
+opencv-python
+numpy
