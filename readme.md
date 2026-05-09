@@ -4,13 +4,14 @@ FastAPI-based Retrieval-Augmented Generation (RAG) project for academic Q&A over
 
 ## Major Structure Changes
 
-- Backend code is now fully grouped under [backend/main.py](backend/main.py), [backend/llm_manager.py](backend/llm_manager.py), and [backend/utils](backend/utils).
-- CLI utilities were moved into [scripts/populate_database.py](scripts/populate_database.py) and [scripts/query_data.py](scripts/query_data.py).
-- Evaluation assets and tests are now grouped under [tests](tests).
+- Backend code is grouped under [backend/main.py](backend/main.py), [backend/llm_manager.py](backend/llm_manager.py), and [backend/utils](backend/utils).
+- CLI utilities are grouped under [scripts/populate_database.py](scripts/populate_database.py) and [scripts/query_data.py](scripts/query_data.py).
+- Evaluation assets and tests are grouped under [tests](tests).
 - Frontend assets are grouped under [frontend](frontend).
 - Environment template was added as [.env.example](.env.example), while local secrets in `.env` are gitignored.
-- Generated/runtime artifacts are kept in [chroma](chroma), [uploaded_data](uploaded_data), and [data](data), and are not intended for source control commits.
-
+- Generated/runtime artifacts are stored in [chroma](chroma), [uploaded_data](uploaded_data), and [data](data).
+- Added AI-based Attention Monitoring module under `backend/attention/`.
+- 
 ## Features
 
 - PDF upload and vector indexing with Chroma.
@@ -18,6 +19,9 @@ FastAPI-based Retrieval-Augmented Generation (RAG) project for academic Q&A over
 - OCR extraction from images using OpenCV + Tesseract.
 - Multi-key Gemini fallback for rate-limit resilience.
 - Retrieval and generation evaluation scripts.
+- AI-powered student attention monitoring system.
+- Live webcam-based attention score tracking.
+- CSV export for attention session reports.
 
 ## Project Structure
 
@@ -28,6 +32,8 @@ AI-Assistant-Teaching/
 ├── backend/
 │   ├── main.py
 │   ├── llm_manager.py
+│   ├── attention/
+│   │   └── attention_tracker.py
 │   └── utils/
 │       ├── __init__.py
 │       ├── evaluator.py
@@ -55,7 +61,6 @@ AI-Assistant-Teaching/
 ├── requirements.txt
 └── readme.md
 ```
-
 ## Requirements
 
 - Python 3.10+
@@ -89,7 +94,7 @@ GEMINI_API_KEY="key1"
 GOOGLE_API_KEY="key1"
 
 # Optional embedding model
-GEMINI_EMBEDDING_MODEL="gemini-embedding-001"
+embedding_model=sentence-transformers/all-MiniLM-L6-v2
 
 # Optional model routing behavior
 GEMINI_CHAT_MODEL="gemini-2.0-flash"
@@ -103,7 +108,10 @@ TESSERACT_CMD="C:\Program Files\Tesseract-OCR\tesseract.exe"
 RAG_MAX_CONTEXT_CHARS="3200"
 RAG_MAX_CHUNK_CHARS="900"
 ```
-
+## Embedding Model
+```
+- sentence-transformers/all-MiniLM-L6-v2
+```
 Default LLM priority in [backend/llm_manager.py](backend/llm_manager.py):
 
 - `gemini-3-flash-preview` (primary)
@@ -142,14 +150,30 @@ python scripts/query_data.py "Your question here"
 
 ## Evaluation
 
+### Retrieval Evaluation
+
 ```bash
 python tests/evaluate_retrieval.py
+
+Metrics:
+
+Hit@K
+Precision@K
+Recall@K
+Mean Reciprocal Rank (MRR)
+NDCG
+Generation Evaluation
 python tests/evaluate_generation.py
-pytest -q tests/test_rag.py
+
+Metrics:
+
+BLEU
+ROUGE
+BERTScore
+Exact Match
+Answer Relevancy
+Latency
 ```
-
-## Notes
-
 - Vector store data is saved in `chroma/` and can be rebuilt anytime.
 - Uploaded files used by the web flow are in `uploaded_data/files/`.
 - Keep secrets only in `.env`; commit-safe defaults belong in `.env.example`.
