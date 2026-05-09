@@ -11,22 +11,35 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from backend.llm_manager import get_embedding_function, get_fallback_llm
 
 
-CHROMA_PATH = "chroma"
-DEFAULT_TOP_K = 4
+CHROMA_PATH = os.path.abspath("chroma")
+DEFAULT_TOP_K = 2
 MAX_CONTEXT_CHARS = int(os.getenv("RAG_MAX_CONTEXT_CHARS", "3200"))
 MAX_CHUNK_CHARS = int(os.getenv("RAG_MAX_CHUNK_CHARS", "900"))
 
 PROMPT_TEMPLATE = """
-Answer the question based only on the following context:
+You are an AI Teaching Assistant.
 
+Answer ONLY using the provided context.
+
+IMPORTANT RULES:
+- Use simple student-friendly explanations.
+- Use proper markdown formatting.
+- For formulas, use VALID LaTeX syntax.
+- Wrap all formulas inside $$ ... $$.
+- Never output broken LaTeX.
+- Use bullet points where appropriate.
+- Explain formulas in plain English after showing them.
+
+Context:
 {context}
 
 ---
 
-Answer the question based on the above context: {question}
+Question:
+{question}
+
+Answer:
 """
-
-
 def _normalize_response_text(response) -> str:
     """Convert provider-specific response payloads into plain text."""
     content = getattr(response, "content", response)
@@ -71,6 +84,10 @@ def query_rag(query_text: str):
 
     # Retrieve relevant chunks
     results = db.similarity_search_with_score(query_text, k=DEFAULT_TOP_K)
+    print("\nRetrieved Results:")
+    for doc, score in results:
+        print(f"\nScore: {score}")
+        print(doc.page_content[:300])
 
     # Build context with a strict budget to reduce generation latency.
     selected = []
@@ -109,7 +126,10 @@ def query_rag(query_text: str):
     print(response_text)
     print("\nSources:")
     print(sources)
-
+    response_text = response_text.replace("ŷ{y}", "\\hat{y}")
+    response_text = response_text.replace("Σ", "\\sum")
+    response_text = response_text.replace("λ", "\\lambda")
+    response_text = response_text.replace("σ", "\\sigma")
     return response_text
 
 

@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from backend.llm_manager import get_embedding_function
 
 
-CHROMA_PATH = "chroma"
+CHROMA_PATH = os.path.abspath("chroma")
 # Standardize with web uploads
 DATA_PATH = os.path.join("uploaded_data", "files")
 
@@ -41,8 +41,8 @@ def load_documents():
 
 def split_documents(documents: list[Document]):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=80,
+        chunk_size=2000,
+        chunk_overlap=200,
         length_function=len,
     )
     return splitter.split_documents(documents)

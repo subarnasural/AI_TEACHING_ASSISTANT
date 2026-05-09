@@ -1,6 +1,7 @@
 import os
 from typing import List
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.embeddings import Embeddings
 from google.api_core.exceptions import ResourceExhausted, InternalServerError
 
@@ -183,28 +184,6 @@ def get_fallback_llm():
         _FALLBACK_LLM_SINGLETON = GeminiFallbackLLM()
     return _FALLBACK_LLM_SINGLETON
 
-class FallbackGoogleEmbeddings(Embeddings):
-    """
-    A custom Embeddings wrapper that intercepts rate-limit errors and gracefully
-    falls back to backup API keys.
-    """
-    def __init__(self, model_name: str):
-        keys = get_api_keys()
-        self.embedding_clients = [
-            GoogleGenerativeAIEmbeddings(model=model_name, google_api_key=key) 
-            for key in keys
-        ]
-
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        last_exception = None
-        for client in self.embedding_clients:
-            try:
-                return client.embed_documents(texts)
-            except (ResourceExhausted, InternalServerError) as e:
-                last_exception = e
-                print(f"Embedding rate limit hit, switching to backup API key...")
-                continue
-        raise last_exception if last_exception else ValueError("Embeddings failed entirely.")
 
     def embed_query(self, text: str) -> List[float]:
         last_exception = None
@@ -217,21 +196,12 @@ class FallbackGoogleEmbeddings(Embeddings):
                 continue
         raise last_exception if last_exception else ValueError("Embeddings failed entirely.")
 
-def get_embedding_model_name() -> str:
-    embedding_model = os.getenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001").strip()
-    if embedding_model.startswith("models/"):
-        embedding_model = embedding_model.split("/", 1)[1]
-
-    if embedding_model == "text-embedding-004":
-        embedding_model = "gemini-embedding-001"
-
-    return embedding_model
-
 def get_embedding_function():
     global _EMBEDDINGS_SINGLETON
-    if _EMBEDDINGS_SINGLETON is not None:
-        return _EMBEDDINGS_SINGLETON
 
-    model_name = get_embedding_model_name()
-    _EMBEDDINGS_SINGLETON = FallbackGoogleEmbeddings(model_name)
+    if _EMBEDDINGS_SINGLETON is None:
+        _EMBEDDINGS_SINGLETON = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
+
     return _EMBEDDINGS_SINGLETON
