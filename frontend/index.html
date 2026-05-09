@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Teaching Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="page-glow page-glow-left"></div>
+    <div class="page-glow page-glow-right"></div>
+
+    <div class="shell">
+        <header class="hero">
+            <p class="eyebrow">Academic Intelligence Platform</p>
+            <h1>AI Teaching Assistant</h1>
+            <p class="subtitle">Retrieval-Augmented Learning for notes, slides, and scanned questions.</p>
+        </header>
+
+        <main class="layout">
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Knowledge Base</h2>
+                    <span class="chip">Ingestion</span>
+                </div>
+                <p class="panel-copy">Upload PDF materials and build the vector index used by the assistant.</p>
+
+                <label class="field-label" for="pdfFiles">Select PDFs</label>
+                <input type="file" id="pdfFiles" multiple accept="application/pdf">
+
+                <div class="actions two-col">
+                    <button id="uploadBtn" type="button" onclick="uploadPDFs()">Upload Files</button>
+                    <button id="buildBtn" class="btn-outline" type="button" onclick="buildDB()">Build Index</button>
+                </div>
+
+                <div id="pdfResult" class="result">No files uploaded yet.</div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>OCR Extraction</h2>
+                    <span class="chip">Vision</span>
+                </div>
+                <p class="panel-copy">Convert image-based questions to text and push them into the query box.</p>
+
+                <label class="field-label" for="imageFile">Select image</label>
+                <input type="file" id="imageFile" accept="image/*">
+
+                <div class="actions two-col">
+                    <button id="ocrBtn" type="button" onclick="extractText()">Extract Text</button>
+                    <button class="btn-outline" type="button" onclick="copyToChat()">Use in Query</button>
+                </div>
+
+                <div id="ocrResult" class="result">OCR output will appear here.</div>
+            </section>
+
+            <section class="panel panel-wide">
+                <div class="panel-head">
+                    <h2>Question Answering</h2>
+                    <span class="chip">RAG</span>
+                </div>
+                <p class="panel-copy">Ask grounded questions against the uploaded course material.</p>
+
+                <div class="query-row">
+                    <input type="text" id="chatInput" placeholder="Ask a course-related question" onkeypress="handleKeyPress(event)">
+                    <button id="askBtn" type="button" onclick="sendChat()">Ask</button>
+                </div>
+
+                <div id="chatResult" class="result result-large">Assistant response will appear here.</div>
+            </section>
+        </main>
+    </div>
+
+    <script src="./app.js"></script>
+</body>
+</html>
